@@ -49,7 +49,9 @@ public class GameView {
             System.out.println("Hero : " + hero.getName() + "  HP " + hero.getHealth() + "/" + hero.getMaxHealth());
         }
         if (enemy != null) {
+            String potions = enemy.getHealPotions() > 0 ? "  potions " + enemy.getHealPotions() : "";
             System.out.println("Enemy: " + enemy.getName() + "  HP " + enemy.getHealth() + "/" + enemy.getMaxHealth()
+                    + potions
                     + "  (encounter " + (model.getCurrentEncounter() + 1) + " of " + model.getEnemies().size() + ")");
         }
     }

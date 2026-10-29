@@ -325,7 +325,8 @@ public class SwingGameView extends JFrame {
         if (enemy != null) {
             String[] sprite = SpriteArt.forEnemy(enemy);
             enemyNameLabel.setText(enemy.getName());
-            enemyStatsLabel.setText("ATK " + enemy.getAttack() + "   DEF " + enemy.getDefence());
+            String potions = enemy.getHealPotions() > 0 ? "   POTIONS " + enemy.getHealPotions() : "";
+            enemyStatsLabel.setText("ATK " + enemy.getAttack() + "   DEF " + enemy.getDefence() + potions);
             enemyHealthBar.setHealth(enemy.getHealth(), enemy.getMaxHealth(), sameEnemy);
             arena.setEnemy(sprite);
             lastEnemySprite = sprite;

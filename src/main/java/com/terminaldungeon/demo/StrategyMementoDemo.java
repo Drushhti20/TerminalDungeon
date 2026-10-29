@@ -32,6 +32,9 @@ public class StrategyMementoDemo {
         cautiousGoblin.setName("Cautious Goblin");
         aggressiveGoblin.setStrategy(new AggressiveStrategy());
         cautiousGoblin.setStrategy(new CautiousStrategy());
+        // both carry the same potions, so any difference comes from the strategy alone
+        aggressiveGoblin.setHealPotions(1);
+        cautiousGoblin.setHealPotions(1);
 
         System.out.println("At full health:");
         showChoice(aggressiveGoblin, hero);
@@ -39,8 +42,12 @@ public class StrategyMementoDemo {
 
         aggressiveGoblin.setHealth(10);
         cautiousGoblin.setHealth(10);
-        System.out.println("At low health (10 HP):");
+        System.out.println("At low health (10 HP), 1 potion each:");
         showChoice(aggressiveGoblin, hero);
+        showChoice(cautiousGoblin, hero);
+
+        cautiousGoblin.setHealPotions(0);
+        System.out.println("Cautious Goblin out of potions:");
         showChoice(cautiousGoblin, hero);
 
         System.out.println("\n===== Memento: undo the last round =====");

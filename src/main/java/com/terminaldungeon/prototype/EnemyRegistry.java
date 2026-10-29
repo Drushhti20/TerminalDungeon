@@ -5,13 +5,15 @@ import java.util.Map;
 
 // Prototype Registry
 // Stores the prepared Goblin and Orc templates and returns independent copies of them
-// Stat values are placeholders, to be agreed with Member 2's damage and healing rules
+// Stats are tuned against Member 2's damage and healing rules so the hero can lose:
+// attacking every turn loses, healing at the right time wins.
+// The Orc carries 2 healing potions; Goblins carry none.
 public class EnemyRegistry {
     private Map<String, EnemyPrototype> prototypes = new HashMap<>();
 
     public EnemyRegistry() {
-        registerPrototype("Goblin", new Enemy("Goblin", 40, 8, 3));
-        registerPrototype("Orc", new Enemy("Orc", 70, 12, 6));
+        registerPrototype("Goblin", new Enemy("Goblin", 40, 17, 3));
+        registerPrototype("Orc", new Enemy("Orc", 100, 22, 6, 2));
     }
 
     public void registerPrototype(String key, EnemyPrototype prototype) {

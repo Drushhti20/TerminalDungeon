@@ -112,14 +112,17 @@ public class GameModel {
     // Memento: capture the game state needed for undo and checkpoint loading.
     public Snapshot createSnapshot() {
         int[] enemyHealth = new int[enemies.size()];
+        int[] enemyPotions = new int[enemies.size()];
 
         for (int i = 0; i < enemies.size(); i++) {
             enemyHealth[i] = enemies.get(i).getHealth();
+            enemyPotions[i] = enemies.get(i).getHealPotions();
         }
 
         return new Snapshot(
                 hero == null ? null : hero.getHealth(),
                 enemyHealth,
+                enemyPotions,
                 currentEncounter,
                 round,
                 new ArrayList<>(messages),
@@ -145,6 +148,7 @@ public class GameModel {
 
         for (int i = 0; i < enemies.size(); i++) {
             enemies.get(i).setHealth(snapshot.enemyHealth[i]);
+            enemies.get(i).setHealPotions(snapshot.enemyPotions[i]);
         }
 
         currentEncounter = snapshot.currentEncounter;
@@ -157,6 +161,7 @@ public class GameModel {
     public static final class Snapshot {
         private final Integer heroHealth;
         private final int[] enemyHealth;
+        private final int[] enemyPotions;
         private final int currentEncounter;
         private final int round;
         private final List<String> messages;
@@ -165,6 +170,7 @@ public class GameModel {
         private Snapshot(
                 Integer heroHealth,
                 int[] enemyHealth,
+                int[] enemyPotions,
                 int currentEncounter,
                 int round,
                 List<String> messages,
@@ -172,6 +178,7 @@ public class GameModel {
 
             this.heroHealth = heroHealth;
             this.enemyHealth = enemyHealth.clone();
+            this.enemyPotions = enemyPotions.clone();
             this.currentEncounter = currentEncounter;
             this.round = round;
             this.messages = Collections.unmodifiableList(

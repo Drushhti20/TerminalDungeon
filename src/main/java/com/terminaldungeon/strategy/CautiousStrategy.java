@@ -3,7 +3,8 @@ package com.terminaldungeon.strategy;
 import com.terminaldungeon.builder.Hero;
 import com.terminaldungeon.prototype.Enemy;
 
-// Cautious enemies heal at low health if they are missing health.
+// Cautious enemies heal at low health if they are missing health and still have a potion.
+// Once the potions run out they attack, so a cautious enemy cannot stall the battle forever.
 public class CautiousStrategy implements EnemyStrategy {
 
     @Override
@@ -18,7 +19,9 @@ public class CautiousStrategy implements EnemyStrategy {
         boolean missingHealth =
                 enemy.getHealth() < enemy.getMaxHealth();
 
-        if (belowHalfHealth && missingHealth) {
+        boolean hasPotion = enemy.getHealPotions() > 0;
+
+        if (belowHalfHealth && missingHealth && hasPotion) {
             return "heal";
         }
 

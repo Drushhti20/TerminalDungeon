@@ -12,9 +12,9 @@ public class BattleCoordinator {
 
     private static final int HEAL_AMOUNT = 20;
 
-    // Enemies heal less than the hero; at 20 a cautious Orc out-healed every hero's damage
-    // and the dungeon could not be won.
-    private static final int ENEMY_HEAL_AMOUNT = 6;
+    // An enemy heal uses one healing potion, so it is limited; enemies heal less than the hero
+    // so a potion slows the hero down without dragging the fight out.
+    private static final int ENEMY_HEAL_AMOUNT = 12;
 
     private final GameModel model;
     private boolean enemyDefeatedThisRound = false;
@@ -177,6 +177,13 @@ public class BattleCoordinator {
             );
 
         } else if ("heal".equalsIgnoreCase(action)) {
+            // every enemy heal uses a potion; with none left the enemy attacks instead
+            if (enemy.getHealPotions() <= 0) {
+                resolveEnemyAction("attack");
+                return;
+            }
+            enemy.setHealPotions(enemy.getHealPotions() - 1);
+
             int oldHealth = enemy.getHealth();
 
             int newHealth = Math.min(
@@ -187,8 +194,9 @@ public class BattleCoordinator {
             enemy.setHealth(newHealth);
 
             model.addMessage(
-                    enemy.getName() + " heals for "
-                    + (newHealth - oldHealth) + " HP."
+                    enemy.getName() + " drinks a potion and heals for "
+                    + (newHealth - oldHealth) + " HP ("
+                    + enemy.getHealPotions() + " left)."
             );
         }
     }

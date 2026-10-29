@@ -13,6 +13,9 @@ public class Enemy implements EnemyPrototype, Cloneable {
     private int attack;
     private int defence;
 
+    // Healing potions left; each enemy heal uses one, so an enemy cannot heal forever.
+    private int healPotions;
+
     // Strategy Pattern: determines this enemy's behaviour.
     private EnemyStrategy strategy;
 
@@ -21,7 +24,17 @@ public class Enemy implements EnemyPrototype, Cloneable {
             int maxHealth,
             int attack,
             int defence) {
+        this(type, maxHealth, attack, defence, 0);
+    }
 
+    public Enemy(
+            String type,
+            int maxHealth,
+            int attack,
+            int defence,
+            int healPotions) {
+
+        this.healPotions = healPotions;
         this.type = type;
         this.name = type;
         this.maxHealth = maxHealth;
@@ -44,6 +57,7 @@ public class Enemy implements EnemyPrototype, Cloneable {
 
             // Current strategies have no mutable instance state.
             // If mutable state is added later, copy that state here.
+            // healPotions is a primitive, so each copy already has its own count.
 
             return copy;
         } catch (CloneNotSupportedException e) {
@@ -59,6 +73,15 @@ public class Enemy implements EnemyPrototype, Cloneable {
 
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    // public because a heal uses a potion (Member 2) and undo/load restore the count (Member 3)
+    public void setHealPotions(int healPotions) {
+        this.healPotions = healPotions;
+    }
+
+    public int getHealPotions() {
+        return healPotions;
     }
 
     public void setStrategy(EnemyStrategy strategy) {

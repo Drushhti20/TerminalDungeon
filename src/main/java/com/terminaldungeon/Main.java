@@ -24,6 +24,7 @@ public class Main {
         model.setEnemies(List.of(
                 registry.cloneEnemy("Goblin"),
                 registry.cloneEnemy("Goblin"),
+                registry.cloneEnemy("Skeleton"),
                 registry.cloneEnemy("Orc")
         ));
 

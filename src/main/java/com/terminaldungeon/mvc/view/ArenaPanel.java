@@ -33,6 +33,7 @@ final class ArenaPanel extends JComponent {
     private static final long FLOAT_MS = 950;
     private static final long SPARKLE_MS = 900;
     private static final long GHOST_MS = 700;
+    private static final long CARD_MS = 3200;
 
     private String[] enemySprite;
     private String[] ghostSprite;
@@ -42,6 +43,11 @@ final class ArenaPanel extends JComponent {
     private String bannerTitle;
     private String bannerSubtitle;
     private Color bannerColor;
+    private String summaryRank;
+    private List<String> summaryLines;
+    private String cardTitle;
+    private String cardText;
+    private long cardStart;
 
     private final Fighter hero = new Fighter();
     private final Fighter enemy = new Fighter();
@@ -127,8 +133,22 @@ final class ArenaPanel extends JComponent {
         bannerColor = color;
     }
 
+    // results shown inside the end banner: a big rank letter and a few lines of numbers
+    void setSummary(String rank, List<String> lines) {
+        summaryRank = rank;
+        summaryLines = lines;
+    }
+
     void clearBanner() {
         bannerTitle = null;
+        summaryLines = null;
+    }
+
+    // story caption that fades in under the encounter dots when a new enemy steps in
+    void showTitleCard(String title, String text, long delayMs) {
+        cardTitle = title;
+        cardText = text;
+        cardStart = now() + delayMs;
     }
 
     // the attacker lunges forward; when the blow lands the target flashes, a slash sweeps across it
@@ -220,6 +240,10 @@ final class ArenaPanel extends JComponent {
         paintSparkles(scene, heroX, enemyX, floorY, time);
         paintFloatingTexts(scene, heroX, enemyX, floorY, time);
         scene.dispose();
+
+        if (cardTitle != null && bannerTitle == null) {
+            paintTitleCard(g, width, time);
+        }
 
         if (bannerTitle != null) {
             paintBanner(g, width, height);
@@ -428,21 +452,77 @@ final class ArenaPanel extends JComponent {
         }
     }
 
+    private void paintTitleCard(Graphics2D g, int width, long time) {
+        long elapsed = time - cardStart;
+        if (elapsed < 0) {
+            return;
+        }
+        if (elapsed >= CARD_MS) {
+            cardTitle = null;
+            return;
+        }
+        float alpha = Math.min(1f, elapsed / 300f) * Math.min(1f, (CARD_MS - elapsed) / 600f);
+
+        g.setFont(Theme.ui(Font.ITALIC, 15));
+        int textWidth = g.getFontMetrics().stringWidth(cardText);
+        int boxWidth = Math.max(textWidth, 300) + 48;
+        Graphics2D card = (Graphics2D) g.create();
+        card.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        card.setColor(new Color(10, 8, 14, 190));
+        card.fillRoundRect(width / 2 - boxWidth / 2, 46, boxWidth, 66, 16, 16);
+        card.setFont(Theme.title(22));
+        card.setColor(Theme.GOLD);
+        drawCentered(card, cardTitle, width / 2, 74);
+        card.setFont(Theme.ui(Font.ITALIC, 15));
+        card.setColor(Theme.TEXT);
+        drawCentered(card, cardText, width / 2, 98);
+        card.dispose();
+    }
+
     private void paintBanner(Graphics2D g, int width, int height) {
-        int bandHeight = 120;
+        boolean hasSummary = summaryLines != null;
+        int bandHeight = hasSummary ? 250 : 120;
         int bandY = (height - bandHeight) / 2;
-        g.setColor(new Color(10, 8, 14, 205));
+        g.setColor(new Color(10, 8, 14, hasSummary ? 225 : 205));
         g.fillRect(0, bandY, width, bandHeight);
         g.setColor(bannerColor);
         g.fillRect(0, bandY, width, 3);
         g.fillRect(0, bandY + bandHeight - 3, width, 3);
 
-        g.setFont(Theme.title(46));
+        g.setFont(Theme.title(hasSummary ? 40 : 46));
         g.setColor(bannerColor);
-        drawCentered(g, bannerTitle, width / 2, bandY + 62);
+        drawCentered(g, bannerTitle, width / 2, bandY + (hasSummary ? 48 : 62));
+
+        if (hasSummary) {
+            paintSummary(g, width, bandY);
+        }
+
         g.setFont(Theme.ui(Font.PLAIN, 16));
         g.setColor(Theme.TEXT);
-        drawCentered(g, bannerSubtitle, width / 2, bandY + 95);
+        drawCentered(g, bannerSubtitle, width / 2, bandY + bandHeight - (hasSummary ? 16 : 25));
+    }
+
+    private void paintSummary(Graphics2D g, int width, int bandY) {
+        int rankX = width / 2 - 190;
+        int rankY = bandY + 128;
+        g.setColor(new Color(255, 255, 255, 18));
+        g.fillOval(rankX - 52, rankY - 52, 104, 104);
+        g.setColor(bannerColor);
+        g.setStroke(new BasicStroke(3f));
+        g.drawOval(rankX - 52, rankY - 52, 104, 104);
+        g.setFont(Theme.title(62));
+        drawCentered(g, summaryRank, rankX, rankY + 22);
+        g.setFont(Theme.ui(Font.BOLD, 11));
+        g.setColor(Theme.MUTED);
+        drawCentered(g, "RANK", rankX, rankY + 70);
+
+        g.setFont(Theme.mono(15));
+        g.setColor(Theme.TEXT);
+        int lineY = bandY + 78;
+        for (String line : summaryLines) {
+            g.drawString(line, width / 2 - 100, lineY);
+            lineY += 23;
+        }
     }
 
     private static void drawCentered(Graphics2D g, String text, int centerX, int baselineY) {

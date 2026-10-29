@@ -176,6 +176,29 @@ public class BattleCoordinator {
                     + hero.getMaxHealth()
             );
 
+        } else if ("fury".equalsIgnoreCase(action)) {
+            // a berserker's fury hits with one and a half times its attack
+            int damage = Math.max(
+                    1,
+                    enemy.getAttack() * 3 / 2 - hero.getDefence()
+            );
+
+            hero.setHealth(
+                    Math.max(0, hero.getHealth() - damage)
+            );
+
+            model.addMessage(
+                    enemy.getName() + " attacks "
+                    + hero.getName() + " in a fury for "
+                    + damage + " damage!"
+            );
+
+            model.addMessage(
+                    hero.getName() + " HP: "
+                    + hero.getHealth() + "/"
+                    + hero.getMaxHealth()
+            );
+
         } else if ("heal".equalsIgnoreCase(action)) {
             // every enemy heal uses a potion; with none left the enemy attacks instead
             if (enemy.getHealPotions() <= 0) {

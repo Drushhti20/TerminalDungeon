@@ -126,10 +126,11 @@ public class GameController {
         model.clearMessages();
         battle.playRound(action);
 
-        view.showMessages(model.getMessages());
+        view.showRoundMessages(model);
         view.showStatus(model);
         if (model.isGameOver()) {
             view.showResult(model.getResult());
+            view.showSummary(model);
         }
     }
 

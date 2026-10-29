@@ -1,6 +1,7 @@
 package com.terminaldungeon.prototype;
 
 import com.terminaldungeon.strategy.AggressiveStrategy;
+import com.terminaldungeon.strategy.BerserkerStrategy;
 import com.terminaldungeon.strategy.CautiousStrategy;
 import com.terminaldungeon.strategy.EnemyStrategy;
 
@@ -45,6 +46,8 @@ public class Enemy implements EnemyPrototype, Cloneable {
         // Keep the existing enemy setup and assign a default strategy.
         if ("Orc".equalsIgnoreCase(type)) {
             this.strategy = new CautiousStrategy();
+        } else if ("Skeleton".equalsIgnoreCase(type)) {
+            this.strategy = new BerserkerStrategy();
         } else {
             this.strategy = new AggressiveStrategy();
         }

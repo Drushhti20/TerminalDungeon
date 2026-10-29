@@ -10,6 +10,8 @@ import java.util.List;
 // View
 // Shows the text the player sees; it only displays data and never calculates damage or decides enemy moves
 public class GameView {
+    private final BattleStats stats = new BattleStats();
+    private int lastIntroEncounter = -1;
 
     public void showWelcome() {
         System.out.println("=================================");
@@ -34,6 +36,7 @@ public class GameView {
                 + " | HP " + hero.getHealth() + "/" + hero.getMaxHealth()
                 + " | ATK " + hero.getAttack()
                 + " | DEF " + hero.getDefence());
+        System.out.println("\n" + Story.OPENING);
     }
 
     public void showCommandPrompt() {
@@ -43,6 +46,13 @@ public class GameView {
     public void showStatus(GameModel model) {
         Hero hero = model.getHero();
         Enemy enemy = model.getCurrentEnemy();
+
+        // a short story line whenever a new enemy steps in
+        if (enemy != null && model.getCurrentEncounter() != lastIntroEncounter) {
+            System.out.println("\n>> " + Story.encounterTitle(model, enemy));
+            System.out.println("   " + Story.encounterIntro(enemy));
+            lastIntroEncounter = model.getCurrentEncounter();
+        }
 
         System.out.println("\n---------- Round " + model.getRound() + " ----------");
         if (hero != null) {
@@ -60,6 +70,12 @@ public class GameView {
         for (String message : messages) {
             System.out.println(message);
         }
+    }
+
+    // prints a battle round and keeps its numbers for the end-of-game summary
+    public void showRoundMessages(GameModel model) {
+        showMessages(model.getMessages());
+        stats.record(model.getRound(), model.getMessages(), model.getHero().getName());
     }
 
     public void showHelp() {
@@ -85,13 +101,22 @@ public class GameView {
 
     public void showResult(GameResult result) {
         if (result == GameResult.VICTORY) {
-            System.out.println("\n*** VICTORY! Every enemy in the dungeon is defeated. ***");
+            System.out.println("\n" + Story.VICTORY);
+            System.out.println("*** VICTORY! Every enemy in the dungeon is defeated. ***");
         } else if (result == GameResult.DEFEAT) {
-            System.out.println("\n*** DEFEAT. Your hero has fallen. ***");
+            System.out.println("\n" + Story.DEFEAT);
+            System.out.println("*** DEFEAT. Your hero has fallen. ***");
         }
-        if (result != GameResult.IN_PROGRESS) {
-            System.out.println("You can still undo, load or quit.");
+    }
+
+    public void showSummary(GameModel model) {
+        System.out.println("\n+-------------- RESULTS --------------+");
+        for (String line : Story.summary(model, stats)) {
+            System.out.printf("| %-35s |%n", line);
         }
+        System.out.printf("| %-35s |%n", "Rank:             " + Story.rank(model));
+        System.out.println("+-------------------------------------+");
+        System.out.println("You can still undo, load or quit.");
     }
 
     public void showGoodbye() {

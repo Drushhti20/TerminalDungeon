@@ -24,7 +24,8 @@ public class GuiMain {
             Enemy secondGoblin = registry.cloneEnemy("Goblin");
             firstGoblin.setName("Goblin 1");
             secondGoblin.setName("Goblin 2");
-            model.setEnemies(List.of(firstGoblin, secondGoblin, registry.cloneEnemy("Orc")));
+            model.setEnemies(List.of(firstGoblin, secondGoblin,
+                    registry.cloneEnemy("Skeleton"), registry.cloneEnemy("Orc")));
 
             SwingGameView view = new SwingGameView();
             BattleCoordinator battle = new BattleCoordinator(model);

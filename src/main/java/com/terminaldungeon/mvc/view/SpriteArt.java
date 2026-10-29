@@ -50,6 +50,25 @@ final class SpriteArt {
             "....ggg..ggg....",
     };
 
+    static final String[] SKELETON = {
+            "................",
+            ".....zZZZZz.....",
+            "....zZZZZZZz....",
+            "....ZEEZZEEZ....",
+            "....ZERZZERZ....",
+            "....zZZEEZZz....",
+            ".....ZEZEZE.....",
+            "......zZZz......",
+            "K....ZzZZzZ.....",
+            "K..ZZ.ZzzZ.ZZ...",
+            "K.Z...ZzzZ...Z..",
+            "w.Z...zZZz...Z..",
+            "..Z....ZZ....Z..",
+            "......Z..Z......",
+            "......Z..Z......",
+            ".....zZ..Zz.....",
+    };
+
     static final String[] ORC = {
             "................",
             ".....oOOOOOo....",
@@ -91,14 +110,22 @@ final class SpriteArt {
             Map.entry('o', new Color(67, 89, 58)),
             Map.entry('M', new Color(107, 74, 58)),
             Map.entry('X', new Color(192, 198, 208)),
-            Map.entry('x', new Color(107, 68, 35)));
+            Map.entry('x', new Color(107, 68, 35)),
+            Map.entry('Z', new Color(232, 228, 216)),
+            Map.entry('z', new Color(169, 163, 149)));
 
     private SpriteArt() {
     }
 
     // display choice only: which picture to draw for an enemy type
     static String[] forEnemy(Enemy enemy) {
-        return "Orc".equalsIgnoreCase(enemy.getType()) ? ORC : GOBLIN;
+        if ("Orc".equalsIgnoreCase(enemy.getType())) {
+            return ORC;
+        }
+        if ("Skeleton".equalsIgnoreCase(enemy.getType())) {
+            return SKELETON;
+        }
+        return GOBLIN;
     }
 
     // Orcs are drawn bigger than Goblins

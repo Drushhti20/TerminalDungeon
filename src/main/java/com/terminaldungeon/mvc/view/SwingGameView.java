@@ -42,8 +42,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 // View (Swing)
 // Window version of the game screen. Like GameView it only shows data and reads input,
@@ -54,7 +52,7 @@ public class SwingGameView extends JFrame {
     private static final String BATTLE_SCREEN = "battle";
     // the enemy's response starts after the hero's lunge has finished
     private static final long ENEMY_RESPONSE_DELAY_MS = 550;
-    private static final Pattern AMOUNT = Pattern.compile(" for (\\d+) ");
+    private static final Color STORY_COLOR = new Color(205, 195, 170);
 
     private final CardLayout screens = new CardLayout();
     private final JPanel screenPanel = new JPanel(screens);
@@ -90,6 +88,8 @@ public class SwingGameView extends JFrame {
     // last values drawn, used to decide which animation and sound to play after a round
     private GameResult lastResult = GameResult.IN_PROGRESS;
     private boolean hasStatus;
+    private int lastIntroEncounter = -1;
+    private final BattleStats stats = new BattleStats();
     private int lastEncounter;
     private String[] lastEnemySprite;
 
@@ -310,6 +310,7 @@ public class SwingGameView extends JFrame {
     public void showBattleScreen() {
         screens.show(screenPanel, BATTLE_SCREEN);
         attackButton.requestFocusInWindow();
+        appendLog(Story.OPENING, STORY_COLOR, false);
     }
 
     public void showStatus(GameModel model) {
@@ -322,6 +323,13 @@ public class SwingGameView extends JFrame {
 
         Enemy enemy = model.getCurrentEnemy();
         boolean sameEnemy = hasStatus && model.getCurrentEncounter() == lastEncounter;
+        // a story caption whenever a new enemy steps in; after a defeat it waits for the ghost to fade
+        if (enemy != null && model.getCurrentEncounter() != lastIntroEncounter) {
+            arena.showTitleCard(Story.encounterTitle(model, enemy), Story.encounterIntro(enemy), hasStatus ? 900 : 200);
+            appendLog(Story.encounterIntro(enemy), STORY_COLOR, false);
+            lastIntroEncounter = model.getCurrentEncounter();
+        }
+
         if (enemy != null) {
             String[] sprite = SpriteArt.forEnemy(enemy);
             enemyNameLabel.setText(enemy.getName());
@@ -353,6 +361,7 @@ public class SwingGameView extends JFrame {
         for (String message : model.getMessages()) {
             appendLog(message, colorFor(message, hero.getName()), isEvent(message));
         }
+        stats.record(model.getRound(), model.getMessages(), hero.getName());
 
         if (!hasStatus) {
             return;
@@ -380,10 +389,8 @@ public class SwingGameView extends JFrame {
         }
     }
 
-    // the number in "... for 12 damage." or "... heals for 6 HP.", or -1 when there is none
     private static int amountIn(String message) {
-        Matcher matcher = AMOUNT.matcher(message);
-        return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+        return BattleStats.amountIn(message);
     }
 
     private void playAttack(boolean heroAttacks, int damage, long delayMs) {
@@ -459,17 +466,24 @@ public class SwingGameView extends JFrame {
         if (result == GameResult.VICTORY) {
             arena.setBanner("VICTORY", "The dungeon is cleared!  Undo or Load to play on.", Theme.GOLD);
             if (justEnded) {
+                appendLog(Story.VICTORY, STORY_COLOR, false);
                 sounds.play(SoundEffects.Sound.VICTORY, 700);
             }
         } else if (result == GameResult.DEFEAT) {
             arena.setBanner("DEFEAT", "Your hero has fallen.  Undo or Load to try again.", Theme.DANGER);
             if (justEnded) {
+                appendLog(Story.DEFEAT, STORY_COLOR, false);
                 sounds.play(SoundEffects.Sound.DEFEAT, ENEMY_RESPONSE_DELAY_MS + 400);
             }
         } else {
             arena.clearBanner();
         }
         lastResult = result;
+    }
+
+    // results inside the end banner: rounds, health left, damage, heals and a rank
+    public void showSummary(GameModel model) {
+        arena.setSummary(Story.rank(model), Story.summary(model, stats));
     }
 
     // attack and heal are blocked after a win or loss; save, load, undo and help stay available

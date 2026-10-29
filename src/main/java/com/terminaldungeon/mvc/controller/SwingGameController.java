@@ -100,6 +100,9 @@ public class SwingGameController {
     private void refresh() {
         view.showStatus(model);
         view.showResult(model.getResult());
+        if (model.isGameOver()) {
+            view.showSummary(model);
+        }
         view.setBattleActionsEnabled(!model.isGameOver());
     }
 }

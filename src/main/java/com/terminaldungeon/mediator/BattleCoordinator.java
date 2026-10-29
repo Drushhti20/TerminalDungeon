@@ -12,6 +12,10 @@ public class BattleCoordinator {
 
     private static final int HEAL_AMOUNT = 20;
 
+    // Enemies heal less than the hero; at 20 a cautious Orc out-healed every hero's damage
+    // and the dungeon could not be won.
+    private static final int ENEMY_HEAL_AMOUNT = 6;
+
     private final GameModel model;
     private boolean enemyDefeatedThisRound = false;
 
@@ -177,7 +181,7 @@ public class BattleCoordinator {
 
             int newHealth = Math.min(
                     enemy.getMaxHealth(),
-                    oldHealth + HEAL_AMOUNT
+                    oldHealth + ENEMY_HEAL_AMOUNT
             );
 
             enemy.setHealth(newHealth);

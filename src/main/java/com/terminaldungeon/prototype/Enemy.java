@@ -1,7 +1,10 @@
 package com.terminaldungeon.prototype;
 
-// Concrete Prototype
-// Goblin and Orc templates are Enemy objects; each encounter gets its own copy
+import com.terminaldungeon.strategy.AggressiveStrategy;
+import com.terminaldungeon.strategy.CautiousStrategy;
+import com.terminaldungeon.strategy.EnemyStrategy;
+
+// Concrete Prototype: every encounter has independent enemy health and stats.
 public class Enemy implements EnemyPrototype, Cloneable {
     private String type;
     private String name;
@@ -10,27 +13,43 @@ public class Enemy implements EnemyPrototype, Cloneable {
     private int attack;
     private int defence;
 
-    // PLACEHOLDER - Member 3: enemy behaviour (aggressive / cautious strategy)
-    // add the strategy field with a getter and setter here, and if the strategy
-    // has changing internal state, give each copy its own strategy in clone()
+    // Strategy Pattern: determines this enemy's behaviour.
+    private EnemyStrategy strategy;
 
-    public Enemy(String type, int maxHealth, int attack, int defence) {
+    public Enemy(
+            String type,
+            int maxHealth,
+            int attack,
+            int defence) {
+
         this.type = type;
         this.name = type;
         this.maxHealth = maxHealth;
         this.health = maxHealth;
         this.attack = attack;
         this.defence = defence;
+
+        // Keep the existing enemy setup and assign a default strategy.
+        if ("Orc".equalsIgnoreCase(type)) {
+            this.strategy = new CautiousStrategy();
+        } else {
+            this.strategy = new AggressiveStrategy();
+        }
     }
 
-    // calls Object.clone() using super.clone()
-    // every field is a primitive or an immutable String, so the copy shares no changing state
     @Override
     public Enemy clone() {
         try {
-            return (Enemy) super.clone();
+            Enemy copy = (Enemy) super.clone();
+
+            // Current strategies have no mutable instance state.
+            // If mutable state is added later, copy that state here.
+
+            return copy;
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError("Enemy implements Cloneable", e);
+            throw new AssertionError(
+                    "Enemy implements Cloneable", e
+            );
         }
     }
 
@@ -38,9 +57,16 @@ public class Enemy implements EnemyPrototype, Cloneable {
         this.name = name;
     }
 
-    // public because health changes during battle (Member 2) and on undo/load (Member 3)
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    public void setStrategy(EnemyStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public EnemyStrategy getStrategy() {
+        return strategy;
     }
 
     public String getType() {

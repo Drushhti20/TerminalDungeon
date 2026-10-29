@@ -1,4 +1,3 @@
-
 package com.terminaldungeon.mediator;
 
 import com.terminaldungeon.builder.Hero;
@@ -8,6 +7,7 @@ import com.terminaldungeon.prototype.Enemy;
 import com.terminaldungeon.template_method.PlayerTurn;
 import com.terminaldungeon.template_method.EnemyTurn;
 
+// Mediator: coordinates player actions, enemy actions and round completion.
 public class BattleCoordinator {
 
     private static final int HEAL_AMOUNT = 20;
@@ -32,7 +32,9 @@ public class BattleCoordinator {
 
         if (enemy == null) {
             model.setResult(GameResult.VICTORY);
-            model.addMessage("Congratulations! You cleared the dungeon!");
+            model.addMessage(
+                    "Congratulations! You cleared the dungeon!"
+            );
             return;
         }
 
@@ -44,11 +46,10 @@ public class BattleCoordinator {
 
         enemyDefeatedThisRound = false;
 
-        // Run the player's turn through Template Method.
+        // Keep the existing Template Method player-turn flow.
         new PlayerTurn(this, action).executeTurn();
     }
 
-    // Called by PlayerTurn to resolve the player's chosen action.
     public void resolvePlayerAction(String action) {
         Hero hero = model.getHero();
         Enemy enemy = model.getCurrentEnemy();
@@ -59,7 +60,8 @@ public class BattleCoordinator {
 
         if ("attack".equalsIgnoreCase(action)) {
             int damage = Math.max(
-                    1, hero.getAttack() - enemy.getDefence()
+                    1,
+                    hero.getAttack() - enemy.getDefence()
             );
 
             enemy.setHealth(
@@ -67,17 +69,22 @@ public class BattleCoordinator {
             );
 
             model.addMessage(
-                    hero.getName() + " attacks " + enemy.getName()
-                    + " for " + damage + " damage."
+                    hero.getName() + " attacks "
+                    + enemy.getName() + " for "
+                    + damage + " damage."
             );
 
             model.addMessage(
                     enemy.getName() + " HP: "
-                    + enemy.getHealth() + "/" + enemy.getMaxHealth()
+                    + enemy.getHealth() + "/"
+                    + enemy.getMaxHealth()
             );
 
             if (enemy.getHealth() <= 0) {
-                model.addMessage(enemy.getName() + " has been defeated!");
+                model.addMessage(
+                        enemy.getName() + " has been defeated!"
+                );
+
                 enemyDefeatedThisRound = true;
                 advanceEncounter();
             }
@@ -99,7 +106,6 @@ public class BattleCoordinator {
         }
     }
 
-    // Called after the player's action has finished.
     public void finishPlayerTurn() {
         Hero hero = model.getHero();
 
@@ -108,7 +114,6 @@ public class BattleCoordinator {
             return;
         }
 
-        // A defeated enemy must not respond.
         if (enemyDefeatedThisRound) {
             finishRound();
             return;
@@ -116,15 +121,27 @@ public class BattleCoordinator {
 
         Enemy enemy = model.getCurrentEnemy();
 
-        if (enemy != null && model.getResult() == GameResult.IN_PROGRESS) {
-            // Default behaviour until Member 3 connects Strategy.
-            new EnemyTurn(this, () -> "attack").executeTurn();
+        if (enemy != null
+                && model.getResult() == GameResult.IN_PROGRESS) {
+
+            // Strategy chooses the action.
+            // EnemyTurn still controls the turn sequence.
+            new EnemyTurn(this, () -> {
+                if (enemy.getStrategy() == null) {
+                    return "attack";
+                }
+
+                String selected = enemy.getStrategy()
+                        .chooseAction(enemy, model.getHero());
+
+                return selected == null ? "attack" : selected;
+            }).executeTurn();
+
         } else {
             finishRound();
         }
     }
 
-    // Called by EnemyTurn to resolve its selected action.
     public void resolveEnemyAction(String action) {
         Hero hero = model.getHero();
         Enemy enemy = model.getCurrentEnemy();
@@ -135,7 +152,8 @@ public class BattleCoordinator {
 
         if ("attack".equalsIgnoreCase(action)) {
             int damage = Math.max(
-                    1, enemy.getAttack() - hero.getDefence()
+                    1,
+                    enemy.getAttack() - hero.getDefence()
             );
 
             hero.setHealth(
@@ -144,12 +162,14 @@ public class BattleCoordinator {
 
             model.addMessage(
                     enemy.getName() + " attacks "
-                    + hero.getName() + " for " + damage + " damage."
+                    + hero.getName() + " for "
+                    + damage + " damage."
             );
 
             model.addMessage(
                     hero.getName() + " HP: "
-                    + hero.getHealth() + "/" + hero.getMaxHealth()
+                    + hero.getHealth() + "/"
+                    + hero.getMaxHealth()
             );
 
         } else if ("heal".equalsIgnoreCase(action)) {
@@ -169,7 +189,6 @@ public class BattleCoordinator {
         }
     }
 
-    // Completes a round and determines the game result.
     public void finishRound() {
         model.setRound(model.getRound() + 1);
 
@@ -177,12 +196,17 @@ public class BattleCoordinator {
 
         if (hero != null && hero.getHealth() <= 0) {
             model.setResult(GameResult.DEFEAT);
-            model.addMessage(hero.getName() + " has been defeated!");
+
+            model.addMessage(
+                    hero.getName() + " has been defeated!"
+            );
+
             return;
         }
 
         if (model.getCurrentEnemy() == null) {
             model.setResult(GameResult.VICTORY);
+
             model.addMessage(
                     "Congratulations! You cleared the dungeon!"
             );
@@ -190,13 +214,16 @@ public class BattleCoordinator {
     }
 
     private void advanceEncounter() {
-        model.setCurrentEncounter(model.getCurrentEncounter() + 1);
+        model.setCurrentEncounter(
+                model.getCurrentEncounter() + 1
+        );
 
         Enemy nextEnemy = model.getCurrentEnemy();
 
         if (nextEnemy != null) {
             model.addMessage(
-                    "The next enemy approaches: " + nextEnemy.getName()
+                    "The next enemy approaches: "
+                    + nextEnemy.getName()
             );
         }
     }

@@ -2,29 +2,53 @@ package com.terminaldungeon.memento;
 
 import com.terminaldungeon.mvc.model.GameModel;
 
-// PLACEHOLDER - Member 3: replace this file with the real history keeper (Memento caretaker)
-// Exists only so Member 1's controller compiles; it stores no snapshots.
-// The controller calls recordRound() before each valid battle round, and undo(), saveCheckpoint()
-// and loadCheckpoint() for the matching commands. Each returns an error message, or null on success.
+// Memento caretaker: stores one undo snapshot and one in-memory checkpoint.
 public class GameHistory {
-    private GameModel model;
+    private final GameModel model;
+    private GameModel.Snapshot undoSnapshot;
+    private GameModel.Snapshot checkpoint;
 
     public GameHistory(GameModel model) {
+        if (model == null) {
+            throw new IllegalArgumentException("GameModel cannot be null.");
+        }
         this.model = model;
     }
 
+    // Called before every valid attack or heal round.
     public void recordRound() {
+        undoSnapshot = model.createSnapshot();
     }
 
+    // Undo is available once for the most recently recorded round.
     public String undo() {
-        return "Undo is not available yet (Member 3's history).";
+        if (undoSnapshot == null) {
+            return "No earlier round is available to undo.";
+        }
+
+        model.restoreSnapshot(undoSnapshot);
+        undoSnapshot = null;
+
+        return null;
     }
 
+    // Store one checkpoint in memory.
     public String saveCheckpoint() {
-        return "Save is not available yet (Member 3's history).";
+        checkpoint = model.createSnapshot();
+        return null;
     }
 
+    // Restore the saved checkpoint.
     public String loadCheckpoint() {
-        return "Load is not available yet (Member 3's history).";
+        if (checkpoint == null) {
+            return "No checkpoint has been saved yet.";
+        }
+
+        model.restoreSnapshot(checkpoint);
+
+        // Loading clears undo history so it cannot undo past the loaded state.
+        undoSnapshot = null;
+
+        return null;
     }
 }

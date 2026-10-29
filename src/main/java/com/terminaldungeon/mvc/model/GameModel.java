@@ -10,6 +10,8 @@ import java.util.List;
 // Model
 // Holds the current game data: hero, enemies, current encounter, round, messages and result.
 public class GameModel {
+    private static final int MAX_NAME_LENGTH = 20;
+
     private Hero hero;
     private List<Enemy> enemies = new ArrayList<>();
     private int currentEncounter;
@@ -79,6 +81,18 @@ public class GameModel {
 
     public boolean isGameOver() {
         return result != GameResult.IN_PROGRESS;
+    }
+
+    // Checks a hero name typed during setup; shared by the terminal and Swing controllers.
+    // Returns an error message, or null when the name is valid.
+    public String validateHeroName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Name cannot be empty.";
+        }
+        if (name.trim().length() > MAX_NAME_LENGTH) {
+            return "Name must be " + MAX_NAME_LENGTH + " characters or fewer.";
+        }
+        return null;
     }
 
     // Checks whether a new attack/heal action is allowed.

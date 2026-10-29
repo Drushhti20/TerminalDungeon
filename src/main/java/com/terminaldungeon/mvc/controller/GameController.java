@@ -13,8 +13,6 @@ import java.util.Scanner;
 // Receives and checks terminal input, then routes each request to the right feature.
 // It does not implement combat (Member 2) or history (Member 3) itself.
 public class GameController {
-    private static final int MAX_NAME_LENGTH = 20;
-
     private final GameModel model;
     private final GameView view;
     private final BattleCoordinator battle;
@@ -152,13 +150,11 @@ public class GameController {
             }
             String name = input.nextLine().trim();
 
-            if (name.isEmpty()) {
-                view.showError("Name cannot be empty.");
-            } else if (name.length() > MAX_NAME_LENGTH) {
-                view.showError("Name must be " + MAX_NAME_LENGTH + " characters or fewer.");
-            } else {
+            String errorMessage = model.validateHeroName(name);
+            if (errorMessage == null) {
                 return name;
             }
+            view.showError(errorMessage);
         }
     }
 
